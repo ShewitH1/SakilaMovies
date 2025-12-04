@@ -34,7 +34,8 @@ public class Main {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
 
-
+        List<Category> categories = getAllCategories(dataSource);
+        System.out.println(categories);
 
     }
 
@@ -44,14 +45,16 @@ public class Main {
         List<Category> categories = new ArrayList<>();
 
         String query = """
-                select category_id, name
-                from category
-                """;
+                    SELECT
+                    category_id,
+                    name
+                    from category""";
 
         //  connect to the database - use try with resources instead
         try(Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query);
-            ResultSet resultSet = statement.executeQuery()) {
+            ResultSet resultSet = statement.executeQuery();
+            ) {
 
 
             // 1. connection
@@ -63,6 +66,8 @@ public class Main {
                 String name = resultSet.getString("name");
                 Category c = new Category(id, name);
                 categories.add(c);
+//                System.out.printf("%-10s %30s\n", id, name);
+
 
             }
         } catch (SQLException e) {
