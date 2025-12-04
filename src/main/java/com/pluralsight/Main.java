@@ -6,13 +6,15 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
 
         //  to make sure the user provided at least 3 arguments before the program tries to access!
-        if(args.length < 3){
+        if (args.length < 3) {
             System.out.println("You need to provide a username, password, and URL when running this command.");
             System.out.println("For example:");
             System.out.println("Main.exe myUsername myPassword myURL");
@@ -32,32 +34,41 @@ public class Main {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
 
-        // make a query
-        String query = "select productid, productname, unitprice, unitsinstock from products";
 
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()){
-            //connect to the database
+    }
+
+    private static List<Category> getAllCategories(BasicDataSource dataSource){
+
+        //  make an Arraylist - List
+        List<Category> categories = new ArrayList<>();
+
+        String query = """
+                select category_id, name
+                from category
+                """;
+
+        //  connect to the database - use try with resources instead
+        try(Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery()) {
+
 
             // 1. connection
             // 2. prepared statement
             // 3. result
             // 4. iterate
-            while(resultSet.next()){
-                String productid = resultSet.getString("productid");
-                String productname = resultSet.getString("productname");
-                int unitprice = resultSet.getInt("unitprice");
-                int unitsinstock = resultSet.getInt("unitsinstock");
-
-                System.out.printf("%-10s %30s %30s %20d\n", productid, productname, unitprice, unitsinstock);
+            while (resultSet.next()) {
+                int id = resultSet.getInt("category_id");
+                String name = resultSet.getString("name");
+                Category c = new Category(id, name);
+                categories.add(c);
 
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    }
 
+        return categories;
+    }
 }
